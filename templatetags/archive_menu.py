@@ -36,44 +36,46 @@ class ArchiveMenuTemplateNode(Node):
         self.date_field = settings.ARCHIVE_MENU_DATE_FIELD
         self.query_filter = settings.ARCHIVE_MENU_QUERY_FILTER
 
+        archived_model = get_model(self.app_name, self.model_name)
+        
+        if self.query_filter != None:
+            self.published_posts = archived_model.objects.filter(**self.query_filter)
+        else:
+            self.published_posts = archived_model.objects.all()
+
     def get_year_filter_kargs(self, year):
         return {self.date_field + '__year' : year}
 
     def get_month_filter_kargs(self, year, month):
         return dict({self.date_field + '__month' : month}.items() + 
                  self.get_year_filter_kargs(year).items())
-        
+
+    def get_year_list(self):
+        return [datetime.year for datetime 
+                in self.published_posts.dates(self.date_field, 'year', order='DESC')]
+    def get_month_list(self, year):
+        year_filter_kargs = self.get_year_filter_kargs(year)
+        return [datetime.month for datetime in 
+                    self.published_posts.filter(**year_filter_kargs).dates(
+                    self.date_field, 'month', order='DESC')]
 
     def create_archive_menu_data(self):
         archive_menu_data = []
 
-        archived_model = get_model(self.app_name, self.model_name)
-        
-        if self.query_filter != None:
-            published_posts = archived_model.objects.filter(**self.query_filter)
-        else:
-            published_posts = archived_model.objects.all()
 
         # get a list of years and loop       
-        for year in [datetime.year for datetime 
-                in published_posts.dates(self.date_field, 'year', order='DESC')]:
+        for year in self.get_year_list():
             
             # create a new list that will store the current year's month data
             month_list = []
 
-            year_filter_kargs = self.get_year_filter_kargs(year)
-            
             # for every year get a list of months and loop
-            for month in [datetime.month for datetime in 
-                    published_posts.filter(**year_filter_kargs).dates(
-                        self.date_field, 'month', order='DESC')]:
+            for month in self.get_month_list(year):
 
-                # a bit of hack, will change as soon as I find a better way
-                # to save some filter arguments in a setup.py file
                 month_filter_kwargs = self.get_month_filter_kargs(year, month)
                 
                 # query the count of entries posted on the given month
-                post_count = published_posts.filter(
+                post_count = self.published_posts.filter(
                         **month_filter_kwargs).count()
 
                 # insert a tupple consisting the current month and
