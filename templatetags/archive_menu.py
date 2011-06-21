@@ -36,6 +36,14 @@ class ArchiveMenuTemplateNode(Node):
         self.date_field = settings.ARCHIVE_MENU_DATE_FIELD
         self.query_filter = settings.ARCHIVE_MENU_QUERY_FILTER
 
+    def get_year_filter_kargs(self, year):
+        return {self.date_field + '__year' : year}
+
+    def get_month_filter_kargs(self, year, month):
+        return dict({self.date_field + '__month' : month}.items() + 
+                 self.get_year_filter_kargs(year).items())
+        
+
     def create_archive_menu_data(self):
         archive_menu_data = []
 
@@ -53,18 +61,16 @@ class ArchiveMenuTemplateNode(Node):
             # create a new list that will store the current year's month data
             month_list = []
 
-            year_filter_kwargs = {self.date_field + '__year' : year}
+            year_filter_kargs = self.get_year_filter_kargs(year)
             
             # for every year get a list of months and loop
             for month in [datetime.month for datetime in 
-                    published_posts.filter(**year_filter_kwargs).dates(
+                    published_posts.filter(**year_filter_kargs).dates(
                         self.date_field, 'month', order='DESC')]:
 
                 # a bit of hack, will change as soon as I find a better way
                 # to save some filter arguments in a setup.py file
-                month_filter_kwargs = dict(
-                    {self.date_field + '__month' : month}.items() + 
-                        year_filter_kwargs.items())
+                month_filter_kwargs = self.get_month_filter_kargs(year, month)
                 
                 # query the count of entries posted on the given month
                 post_count = published_posts.filter(
