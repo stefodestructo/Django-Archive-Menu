@@ -22,7 +22,7 @@ from mock import Mock, patch
 class ConfigureSettingsTestCase(TestCase):
     """
     """
-    def setup_settings(self):
+    def setup_settings(self, query_filter=None):
         """
         """
         self.app_name_old = settings.ARCHIVE_MENU_APP
@@ -33,7 +33,7 @@ class ConfigureSettingsTestCase(TestCase):
         settings.ARCHIVE_MENU_APP = 'archive_menu'
         settings.ARCHIVE_MENU_MODEL = 'TempModel'
         settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = None
+        settings.ARCHIVE_MENU_QUERY_FILTER = query_filter
 
     def teardown_settings(self):
         """
@@ -42,7 +42,6 @@ class ConfigureSettingsTestCase(TestCase):
         settings.ARCHIVE_MENU_MODEL = self.model_name_old
         settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
         settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
-
 
 class GetMonthFilterKargs(TestCase):
     """
@@ -54,7 +53,6 @@ class GetMonthFilterKargs(TestCase):
         self.assertEqual(archive_menu_node.get_month_filter_kargs(1989, 1),
                          {'date__year' : 1989, 'date__month' : 1}
                         )
-
 
 class GetYearFilterKargs(TestCase):
     """
@@ -133,21 +131,10 @@ class ArchiveMenuSingleDataPointTest(ConfigureSettingsTestCase):
     """
 
     def setUp(self):
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
-
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = None
+        self.setup_settings()
 
     def tearDown(self):
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
+        self.teardown_settings()
 
     def test_create_new_archive_menu_data_with_single_data_point(self):
         """
@@ -184,25 +171,12 @@ class Querytest(ConfigureSettingsTestCase):
                   ]
 
     def setUp(self):
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
-
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = {'is_draft' : False}
+        self.setup_settings({'is_draft' : False})
 
     def tearDown(self):
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
-
+        self.teardown_settings()
 
     def test_query_filter(self):
-
         expected_value = [
                 (2010, [(6, 1), (2, 1)]),
                 (2001, [(1, 2)]),
@@ -217,7 +191,6 @@ class Querytest(ConfigureSettingsTestCase):
         archive_menu_node = archive_menu.ArchiveMenuTemplateNode()
 
         self.assertEqual(archive_menu_node.create_archive_menu_data(), expected_value)
-
 
 class ArchiveMenuFunctionTest(TestCase):
     @patch('archive_menu.templatetags.archive_menu.ArchiveMenuTemplateNode')
@@ -236,21 +209,10 @@ class ArchiveMenuFunctionTest(TestCase):
         
 class ArchiveMenuTagRenderTest(ConfigureSettingsTestCase):
     def setUp(self):
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
-
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = None
+        self.setup_settings()
 
     def tearDown(self):
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
+        self.teardown_settings()
 
     def test_archive_menu_tag_render(self):
         expected_value = [(2000, [(1, 1)])]
