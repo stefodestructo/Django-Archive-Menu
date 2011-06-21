@@ -19,6 +19,29 @@ from django.test import TestCase
 
 from mock import Mock, patch
 
+class ConfigureSettingsTestCase(TestCase):
+    """
+    """
+    def setup_settings(self):
+        """
+        """
+        self.app_name_old = settings.ARCHIVE_MENU_APP
+        self.model_name_old = settings.ARCHIVE_MENU_MODEL
+        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
+        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
+
+        settings.ARCHIVE_MENU_APP = 'archive_menu'
+        settings.ARCHIVE_MENU_MODEL = 'TempModel'
+        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
+        settings.ARCHIVE_MENU_QUERY_FILTER = None
+
+    def teardown_settings(self):
+        """
+        """
+        settings.ARCHIVE_MENU_APP = self.app_name_old
+        settings.ARCHIVE_MENU_MODEL = self.model_name_old
+        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
+        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
 
 
 class GetMonthFilterKargs(TestCase):
@@ -44,7 +67,8 @@ class GetYearFilterKargs(TestCase):
                          {'date__year' : 1989}
                         )
 
-class GetYearListTest(TestCase):
+#class GetYearListTest(TestCase):
+class GetYearListTest(ConfigureSettingsTestCase):
     """
     """
 
@@ -56,21 +80,10 @@ class GetYearListTest(TestCase):
             ]
 
     def setUp(self):
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
-
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = None
+        self.setup_settings()
 
     def tearDown(self):
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
+        self.teardown_settings()
 
     def test_get_year_list(self):
         """
@@ -85,7 +98,7 @@ class GetYearListTest(TestCase):
         self.assertEqual(archive_menu_node.get_year_list(),
                          expected_value)
 
-class GetMonthListTest(TestCase):
+class GetMonthListTest(ConfigureSettingsTestCase):
     """
     """
 
@@ -97,21 +110,10 @@ class GetMonthListTest(TestCase):
             ]
 
     def setUp(self):
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
-
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = None
+        self.setup_settings()
 
     def tearDown(self):
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
+        self.teardown_settings()
 
     def test_get_month_list(self):
         """
@@ -126,7 +128,7 @@ class GetMonthListTest(TestCase):
         self.assertEqual(archive_menu_node.get_month_list(2000),
                          expected_value)
         
-class ArchiveMenuSingleDataPointTest(TestCase):
+class ArchiveMenuSingleDataPointTest(ConfigureSettingsTestCase):
     """
     """
 
@@ -163,7 +165,7 @@ class ArchiveMenuSingleDataPointTest(TestCase):
 
         self.assertEqual(archive_menu_node.create_archive_menu_data(), expected_value)
 
-class Querytest(TestCase):
+class Querytest(ConfigureSettingsTestCase):
     """
     """
 
@@ -232,7 +234,7 @@ class ArchiveMenuFunctionTest(TestCase):
         # assertions
         mock_archive_menu_template_node.assert_called_with('archive_data')
         
-class ArchiveMenuTagRenderTest(TestCase):
+class ArchiveMenuTagRenderTest(ConfigureSettingsTestCase):
     def setUp(self):
         self.app_name_old = settings.ARCHIVE_MENU_APP
         self.model_name_old = settings.ARCHIVE_MENU_MODEL
