@@ -6,17 +6,6 @@ __license__ = "AGPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
 
-# TODO - Add module metadata
-# TODO - Write docstrings for all test modules, classes and methods
-# TODO - Refactor code to make it easier to test
-# TODO - Create a git repo for the app
-# TODO - Post app on github.com
-# TODO - install archive_menu app onto the yakko blog
-# TODO - run tests on yakko
-# TODO - remove old archive_menu code from the yakko blog
-
-
-
 from calendar import month_name
 
 from django.conf import settings
@@ -39,7 +28,8 @@ class ArchiveMenuTemplateNode(Node):
         archived_model = get_model(self.app_name, self.model_name)
         
         if self.query_filter != None:
-            self.published_posts = archived_model.objects.filter(**self.query_filter)
+            self.published_posts = archived_model.objects.filter(
+                                                    **self.query_filter)
         else:
             self.published_posts = archived_model.objects.all()
 
@@ -53,15 +43,16 @@ class ArchiveMenuTemplateNode(Node):
     def get_year_list(self):
         return [datetime.year for datetime 
                 in self.published_posts.dates(self.date_field, 'year', order='DESC')]
+
     def get_month_list(self, year):
         year_filter_kargs = self.get_year_filter_kargs(year)
         return [datetime.month for datetime in 
                     self.published_posts.filter(**year_filter_kargs).dates(
                     self.date_field, 'month', order='DESC')]
 
+
     def create_archive_menu_data(self):
         archive_menu_data = []
-
 
         # get a list of years and loop       
         for year in self.get_year_list():
@@ -72,7 +63,9 @@ class ArchiveMenuTemplateNode(Node):
             # for every year get a list of months and loop
             for month in self.get_month_list(year):
 
-                month_filter_kwargs = self.get_month_filter_kargs(year, month)
+                month_filter_kwargs = self.get_month_filter_kargs(
+                                                                  year,
+                                                                  month)
                 
                 # query the count of entries posted on the given month
                 post_count = self.published_posts.filter(
