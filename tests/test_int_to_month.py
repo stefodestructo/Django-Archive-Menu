@@ -31,5 +31,3 @@ class IntToMonthTemplateTagTest(TestCase):
         rendered_string = template.render(context)
 
         self.assertEqual(rendered_string, expected_value)
-
-

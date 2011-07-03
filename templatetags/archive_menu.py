@@ -1,7 +1,8 @@
-# archive_menu.py
-
+"""
+"""
 __author__ = "Steffen Hunt"
-__date__ = "June 2011"
+__credits__ = ["Steffen Hunt"]
+__date__ = "July 2011"
 __license__ = "AGPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
@@ -14,12 +15,13 @@ from django.template import Library, Node
 
 register = Library()
 
-class ArchiveMenuTemplateNode(Node):
-    def __init__(self, variable_name='ArchiveMenuVar'):
-        
-        self.variable_name = variable_name
+class ArchiveStatistics():
+    """
+    """
 
-        # Read app settings
+    def __init__(self):
+        """
+        """
         self.app_name = settings.ARCHIVE_MENU_APP
         self.model_name = settings.ARCHIVE_MENU_MODEL
         self.date_field = settings.ARCHIVE_MENU_DATE_FIELD
@@ -32,6 +34,41 @@ class ArchiveMenuTemplateNode(Node):
                                                     **self.query_filter)
         else:
             self.published_posts = archived_model.objects.all()
+
+    def get_posts_in_month(self, year, month):
+        """
+        """
+        month_filter_kwargs = self.get_month_filter_kargs(year, month)
+        return self.published_posts.filter(**month_filter_kwargs).count()
+
+    def get_year_filter_kargs(self, year):
+        """
+        """
+        return {self.date_field + '__year' : year}
+
+    def get_month_filter_kargs(self, year, month):
+        """
+        """
+        return dict({self.date_field + '__month' : month}.items() + 
+                 self.get_year_filter_kargs(year).items())
+
+    def get_year_list(self):
+        """
+        """
+        return [datetime.year for datetime 
+                in self.published_posts.dates(self.date_field, 'year', order='DESC')]
+
+    def get_month_list(self, year):
+        """
+        """
+        year_filter_kargs = self.get_year_filter_kargs(year)
+        return [datetime.month for datetime in 
+                    self.published_posts.filter(**year_filter_kargs).dates(
+                    self.date_field, 'month', order='DESC')]
+
+    def get_posts_in_month(self, year, month):
+        month_filter_kwargs = self.get_month_filter_kargs(year, month)
+        return self.published_posts.filter(**month_filter_kwargs).count()
 
     def get_year_filter_kargs(self, year):
         return {self.date_field + '__year' : year}
@@ -51,25 +88,30 @@ class ArchiveMenuTemplateNode(Node):
                     self.date_field, 'month', order='DESC')]
 
 
+class ArchiveMenuTemplateNode(Node):
+    """
+    """
+    def __init__(self, variable_name='ArchiveMenuVar'):
+        """
+        """
+        self.variable_name = variable_name
+
     def create_archive_menu_data(self):
         archive_menu_data = []
 
+        archive_stats = ArchiveStatistics()
+
         # get a list of years and loop       
-        for year in self.get_year_list():
+        for year in archive_stats.get_year_list():
             
-            # create a new list that will store the current year's month data
+            # create a new list stores the current year's month data
             month_list = []
 
             # for every year get a list of months and loop
-            for month in self.get_month_list(year):
+            for month in archive_stats.get_month_list(year):
 
-                month_filter_kwargs = self.get_month_filter_kargs(
-                                                                  year,
-                                                                  month)
-                
                 # query the count of entries posted on the given month
-                post_count = self.published_posts.filter(
-                        **month_filter_kwargs).count()
+                post_count = archive_stats.get_posts_in_month(year, month) 
 
                 # insert a tupple consisting the current month and
                 # the number of entries posted on the current month

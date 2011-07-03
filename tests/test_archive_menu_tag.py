@@ -1,12 +1,13 @@
 """
 """
-
 __author__ = "Steffen Hunt"
 __credits__ = ["Steffen Hunt"]
-__date__ = "June 2011"
+__date__ = "July 2011"
 __license__ = "AGPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
+
+from configure_settings_test_case import ConfigureSettingsTestCase
 
 from datetime import datetime
 
@@ -19,113 +20,7 @@ from django.test import TestCase
 
 from mock import Mock, patch
 
-class ConfigureSettingsTestCase(TestCase):
-    """
-    """
-    def setup_settings(self, query_filter=None):
-        """
-        """
-        self.app_name_old = settings.ARCHIVE_MENU_APP
-        self.model_name_old = settings.ARCHIVE_MENU_MODEL
-        self.date_field_old = settings.ARCHIVE_MENU_DATE_FIELD
-        self.query_filter_old = settings.ARCHIVE_MENU_QUERY_FILTER
 
-        settings.ARCHIVE_MENU_APP = 'archive_menu'
-        settings.ARCHIVE_MENU_MODEL = 'TempModel'
-        settings.ARCHIVE_MENU_DATE_FIELD = 'date'
-        settings.ARCHIVE_MENU_QUERY_FILTER = query_filter
-
-    def teardown_settings(self):
-        """
-        """
-        settings.ARCHIVE_MENU_APP = self.app_name_old
-        settings.ARCHIVE_MENU_MODEL = self.model_name_old
-        settings.ARCHIVE_MENU_DATE_FIELD = self.date_field_old
-        settings.ARCHIVE_MENU_QUERY_FILTER = self.query_filter_old
-
-class GetMonthFilterKargs(TestCase):
-    """
-    """
-    def test_get_month_filter_kargs(self):
-        """
-        """
-        archive_menu_node = archive_menu.ArchiveMenuTemplateNode()
-        self.assertEqual(archive_menu_node.get_month_filter_kargs(1989, 1),
-                         {'date__year' : 1989, 'date__month' : 1}
-                        )
-
-class GetYearFilterKargs(TestCase):
-    """
-    """
-    def test_get_year_filter_kargs(self):
-        """
-        """
-        archive_menu_node = archive_menu.ArchiveMenuTemplateNode()
-        self.assertEqual(archive_menu_node.get_year_filter_kargs(1989),
-                         {'date__year' : 1989}
-                        )
-
-#class GetYearListTest(TestCase):
-class GetYearListTest(ConfigureSettingsTestCase):
-    """
-    """
-
-    test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            ]
-
-    def setUp(self):
-        self.setup_settings()
-
-    def tearDown(self):
-        self.teardown_settings()
-
-    def test_get_year_list(self):
-        """
-        """
-        expected_value = [2012, 2010, 1990]
-
-        for kwargs in self.test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
-
-        archive_menu_node = archive_menu.ArchiveMenuTemplateNode()
-
-        self.assertEqual(archive_menu_node.get_year_list(),
-                         expected_value)
-
-class GetMonthListTest(ConfigureSettingsTestCase):
-    """
-    """
-
-    test_data = [
-            {'year' : 2000, 'month': 1, 'day' : 1},
-            {'year' : 2000, 'month': 1, 'day' : 20},
-            {'year' : 2000, 'month': 2, 'day' : 15},
-            {'year' : 2000, 'month': 6, 'day' : 20},
-            ]
-
-    def setUp(self):
-        self.setup_settings()
-
-    def tearDown(self):
-        self.teardown_settings()
-
-    def test_get_month_list(self):
-        """
-        """
-        expected_value = [6, 2, 1]
-
-        for kwargs in self.test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
-
-        archive_menu_node = archive_menu.ArchiveMenuTemplateNode()
-
-        self.assertEqual(archive_menu_node.get_month_list(2000),
-                         expected_value)
-        
 class ArchiveMenuSingleDataPointTest(ConfigureSettingsTestCase):
     """
     """
