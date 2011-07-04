@@ -14,7 +14,6 @@ from datetime import datetime
 from archive_menu.templatetags import archive_menu
 from archive_menu.tests.models import TempModel
 
-from django.conf import settings
 from django.template import Context, Template
 from django.test import TestCase
 
