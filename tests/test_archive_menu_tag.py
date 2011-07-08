@@ -123,3 +123,26 @@ class ArchiveMenuTagRenderTest(ConfigureSettingsTestCase):
         rendered_string = template.render(context)
 
         self.assertEqual(context[context_var], expected_value)
+
+class ArchiveGetYearsTagRenderTest(ConfigureSettingsTestCase):
+    def setUp(self):
+        self.setup_settings()
+
+    def tearDown(self):
+        self.teardown_settings()
+
+    def test_archive_menu_tag_render(self):
+        expected_value = [2000]
+        context_var = 'archive_data'
+
+        TempModel(date=datetime(
+                year=2000,
+                month=1,
+                day=1
+                )).save()
+
+        context = Context({})
+        template = Template("{% load archive_menu %}{% archive_get_years as archive_data %}")
+        rendered_string = template.render(context)
+
+        self.assertEqual(context[context_var], expected_value)
