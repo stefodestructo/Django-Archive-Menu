@@ -188,6 +188,47 @@ def get_years(parser, token):
 register.tag('archive_get_years', get_years)
 
 
+class GetMonthsTemplateNode(Node):
+    """
+    """
+    def __init__(self, year, variable_name='ArchiveMenu'):
+        """
+        """
+        self.variable_name = variable_name
+        self.year = year
+
+
+    def render(self, context):
+        archive_stats = ArchiveStatistics()
+        context[self.variable_name] = archive_stats.get_month_list(self.year)
+        return ''
+
+def get_months(parser, token):
+    # split the consisting of the contents of the called tag and
+    # strip out the first word which's value is the name of the tag
+    tag_parameters = token.split_contents()[1:]
+
+    variable_name = ''
+    
+    # if there's three parameters store the last parameter
+    # this assumes the second parameter equals 'as'
+    # testing the value of the second parameter doesn't seem necessary
+    if len(tag_parameters) == 3:
+        variable_name = tag_parameters[2]
+        year = int(tag_parameters[0])
+
+    # if tag was called with only one parameter, store that parameter
+    elif len(tag_parameters) == 2:
+        variable_name = tag_parameters[1]
+        year = int(tag_parameters[0])
+
+    return GetMonthsTemplateNode(year, variable_name)          
+
+register.tag('archive_get_months', get_months)
+
+
+
+
 
 
 def int_to_month_name(month_int):
