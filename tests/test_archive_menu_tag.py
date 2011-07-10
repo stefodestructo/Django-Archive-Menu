@@ -132,14 +132,19 @@ class ArchiveGetYearsTagRenderTest(ConfigureSettingsTestCase):
         self.teardown_settings()
 
     def test_archive_menu_tag_render(self):
-        expected_value = [2000]
+
+        test_data = [
+            {'year' : 2012, 'month': 1, 'day' : 1},
+            {'year' : 1990, 'month': 1, 'day' : 20},
+            {'year' : 2010, 'month': 2, 'day' : 15},
+            {'year' : 2010, 'month': 6, 'day' : 20},
+            ]
+        expected_value = [2012, 2010, 1990]
+
         context_var = 'archive_data'
 
-        TempModel(date=datetime(
-                year=2000,
-                month=1,
-                day=1
-                )).save()
+        for kwargs in test_data:
+            TempModel(date=datetime(**kwargs), is_draft=True).save()
 
         context = Context({})
         template = Template("{% load archive_menu %}{% archive_get_years as archive_data %}")
