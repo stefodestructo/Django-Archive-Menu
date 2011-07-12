@@ -231,6 +231,47 @@ register.tag('archive_get_months', get_months)
 
 
 
+class CountPostsInMonthTemplateNode(Node):
+    """
+    """
+    def __init__(self, year, month, variable_name='PostsInMonth'):
+        """
+        """
+        self.variable_name = variable_name
+        self.year = year
+        self.month = month
+
+
+    def render(self, context):
+        archive_stats = ArchiveStatistics()
+        context[self.variable_name] = archive_stats.get_posts_in_month(self.year, self.month)
+        return ''
+
+def count_posts_in_month(parser, token):
+    # split the consisting of the contents of the called tag and
+    # strip out the first word which's value is the name of the tag
+    tag_parameters = token.split_contents()[1:]
+
+    variable_name = ''
+    
+    # if there's four parameters store the last parameter
+    # this assumes the second parameter equals 'as'
+    if len(tag_parameters) == 4:
+        variable_name = tag_parameters[3]
+        year = int(tag_parameters[0])
+        month = int(tag_parameters[1])
+
+    elif len(tag_parameters) == 3:
+        variable_name = tag_parameters[1]
+        year = int(tag_parameters[0])
+        month = int(tag_parameters[1])
+
+    return CountPostsInMonthTemplateNode(year, month, variable_name)          
+
+register.tag('archive_count_posts_in_month', count_posts_in_month)
+
+
+
 def int_to_month_name(month_int):
     """
     Converts the month number into the name of the month as a string.
