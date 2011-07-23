@@ -11,7 +11,7 @@ from calendar import month_name
 
 from django.conf import settings
 from django.db.models import get_model
-from django.template import Library, Node
+from django.template import Library, Node, Variable, VariableDoesNotExist
 
 register = Library()
 
@@ -150,9 +150,6 @@ def archive_menu(parser, token):
 
 register.tag('archive_tag', archive_menu)
 
-
-
-
 class GetYearsTemplateNode(Node):
     """
     """
@@ -187,7 +184,6 @@ def get_years(parser, token):
 
 register.tag('archive_get_years', get_years)
 
-
 class GetMonthsTemplateNode(Node):
     """
     """
@@ -195,12 +191,16 @@ class GetMonthsTemplateNode(Node):
         """
         """
         self.variable_name = variable_name
-        self.year = year
+        self.year = Variable(year)
 
 
     def render(self, context):
+        try:
+            year = self.year.resolve(context)
+        except VariableDoesNotExist:
+            pass
         archive_stats = ArchiveStatistics()
-        context[self.variable_name] = archive_stats.get_month_list(self.year)
+        context[self.variable_name] = archive_stats.get_month_list(year)
         return ''
 
 def get_months(parser, token):
@@ -209,27 +209,23 @@ def get_months(parser, token):
     tag_parameters = token.split_contents()[1:]
 
     variable_name = ''
+
+    year = tag_parameters[0]
     
     # if there's three parameters store the last parameter
     # this assumes the second parameter equals 'as'
     # testing the value of the second parameter doesn't seem necessary
+
     if len(tag_parameters) == 3:
         variable_name = tag_parameters[2]
-        year = int(tag_parameters[0])
 
     # if tag was called with only one parameter, store that parameter
     elif len(tag_parameters) == 2:
         variable_name = tag_parameters[1]
-        year = int(tag_parameters[0])
 
     return GetMonthsTemplateNode(year, variable_name)          
 
 register.tag('archive_get_months', get_months)
-
-
-
-
-
 
 class CountPostsInMonthTemplateNode(Node):
     """
@@ -238,13 +234,17 @@ class CountPostsInMonthTemplateNode(Node):
         """
         """
         self.variable_name = variable_name
-        self.year = year
-        self.month = month
-
+        self.year = Variable(year)
+        self.month = Variable(month)
 
     def render(self, context):
+        try:
+            year = self.year.resolve(context)
+            month = self.month.resolve(context)
+        except VariableDoesNotExist:
+            pass
         archive_stats = ArchiveStatistics()
-        context[self.variable_name] = archive_stats.get_posts_in_month(self.year, self.month)
+        context[self.variable_name] = archive_stats.get_posts_in_month(year, month)
         return ''
 
 def count_posts_in_month(parser, token):
@@ -253,24 +253,23 @@ def count_posts_in_month(parser, token):
     tag_parameters = token.split_contents()[1:]
 
     variable_name = ''
+
+    year = tag_parameters[0]
+    month = tag_parameters[1]
     
     # if there's four parameters store the last parameter
     # this assumes the second parameter equals 'as'
+
+
     if len(tag_parameters) == 4:
         variable_name = tag_parameters[3]
-        year = int(tag_parameters[0])
-        month = int(tag_parameters[1])
 
     elif len(tag_parameters) == 3:
-        variable_name = tag_parameters[1]
-        year = int(tag_parameters[0])
-        month = int(tag_parameters[1])
+        variable_name = tag_parameters[2]
 
     return CountPostsInMonthTemplateNode(year, month, variable_name)          
 
 register.tag('archive_count_posts_in_month', count_posts_in_month)
-
-
 
 def int_to_month_name(month_int):
     """
