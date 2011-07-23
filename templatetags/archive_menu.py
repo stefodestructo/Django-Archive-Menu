@@ -87,69 +87,6 @@ class ArchiveStatistics():
                     self.published_posts.filter(**year_filter_kargs).dates(
                     self.date_field, 'month', order='DESC')]
 
-
-class ArchiveMenuTemplateNode(Node):
-    """
-    """
-    def __init__(self, variable_name='ArchiveMenuVar'):
-        """
-        """
-        self.variable_name = variable_name
-
-    def create_archive_menu_data(self):
-        archive_menu_data = []
-
-        archive_stats = ArchiveStatistics()
-
-        # get a list of years and loop       
-        for year in archive_stats.get_year_list():
-            
-            # create a new list stores the current year's month data
-            month_list = []
-
-            # for every year get a list of months and loop
-            for month in archive_stats.get_month_list(year):
-
-                # query the count of entries posted on the given month
-                post_count = archive_stats.get_posts_in_month(year, month) 
-
-                # insert a tupple consisting the current month and
-                # the number of entries posted on the current month
-                month_list.append((month, post_count))
-            
-            # insert a tuple consisting of the current year and
-            # the list of month data
-            archive_menu_data.append((year, month_list))
-        return archive_menu_data
-        
-        # store the archive data into the a context variable with name given
-
-    def render(self, context):
-        context[self.variable_name] = self.create_archive_menu_data()
-        
-        return ''
-
-def archive_menu(parser, token):
-    # split the consisting of the contents of the called tag and
-    # strip out the first word which's value is the name of the tag
-    tag_parameters = token.split_contents()[1:]
-
-    variable_name = ''
-    
-    # if there's two parameters store the last parameter
-    # this assumes the first parameter equals 'as'
-    # as of now, testing the value of the first parameter doesn't seem necessary
-    if len(tag_parameters) == 2:
-        variable_name = tag_parameters[1]
-
-    # if tag was called with only one parameter, store that parameter
-    elif len(tag_parameters) == 1:
-        variable_name = tag_parameters[0]
-
-    return ArchiveMenuTemplateNode(variable_name)          
-
-register.tag('archive_tag', archive_menu)
-
 class GetYearsTemplateNode(Node):
     """
     """
@@ -159,8 +96,8 @@ class GetYearsTemplateNode(Node):
         self.variable_name = variable_name
 
     def render(self, context):
-        archive_stats = ArchiveStatistics()
-        context[self.variable_name] = archive_stats.get_year_list()
+        context[self.variable_name] = ArchiveStatistics().get_year_list()
+
         return ''
 
 def get_years(parser, token):
@@ -193,14 +130,14 @@ class GetMonthsTemplateNode(Node):
         self.variable_name = variable_name
         self.year = Variable(year)
 
-
     def render(self, context):
         try:
             year = self.year.resolve(context)
         except VariableDoesNotExist:
-            pass
-        archive_stats = ArchiveStatistics()
-        context[self.variable_name] = archive_stats.get_month_list(year)
+            return ''
+
+        context[self.variable_name] = ArchiveStatistics().get_month_list(year)
+
         return ''
 
 def get_months(parser, token):
@@ -242,9 +179,10 @@ class CountPostsInMonthTemplateNode(Node):
             year = self.year.resolve(context)
             month = self.month.resolve(context)
         except VariableDoesNotExist:
-            pass
-        archive_stats = ArchiveStatistics()
-        context[self.variable_name] = archive_stats.get_posts_in_month(year, month)
+            return ''
+
+        context[self.variable_name] = ArchiveStatistics().get_posts_in_month(year, month)
+
         return ''
 
 def count_posts_in_month(parser, token):
@@ -259,7 +197,6 @@ def count_posts_in_month(parser, token):
     
     # if there's four parameters store the last parameter
     # this assumes the second parameter equals 'as'
-
 
     if len(tag_parameters) == 4:
         variable_name = tag_parameters[3]
