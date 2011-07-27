@@ -1,5 +1,6 @@
 """
 """
+from archive_menu.tests.an_app.models import TempModel
 from archive_menu.templatetags import archive_menu
 
 from django.template import Context, Template

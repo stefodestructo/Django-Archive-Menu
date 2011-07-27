@@ -1,9 +1,10 @@
 """
 """
+
 __author__ = "Steffen Hunt"
 __credits__ = ["Steffen Hunt"]
 __date__ = "July 2011"
-__license__ = "AGPL3"
+__license__ = "GPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
 
@@ -12,7 +13,7 @@ from configure_settings_test_case import ConfigureSettingsTestCase
 from datetime import datetime
 
 from archive_menu.templatetags import archive_menu
-from archive_menu.tests.models import TempModel
+from archive_menu.tests.an_app.models import TempModel
 
 from django.template import Context, Template
 from django.test import TestCase

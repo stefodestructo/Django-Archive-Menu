@@ -12,7 +12,7 @@ from configure_settings_test_case import ConfigureSettingsTestCase
 from datetime import datetime
 
 from archive_menu.templatetags import archive_menu
-from archive_menu.tests.models import TempModel
+from archive_menu.tests.an_app.models import TempModel
 
 from django.test import TestCase
 
