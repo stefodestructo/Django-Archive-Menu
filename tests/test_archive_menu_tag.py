@@ -8,165 +8,131 @@ __license__ = "GPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
 
-from configure_settings_test_case import ConfigureSettingsTestCase
-
 from datetime import datetime
 
 from archive_menu.templatetags import archive_menu
 from archive_menu.tests.an_app.models import TempModel
 
 from django.template import Context, Template
-from django.test import TestCase
 
 from mock import Mock, patch
 
-class ArchiveGetYearsTagRenderTest(ConfigureSettingsTestCase):
-    def setUp(self):
-        self.setup_settings()
 
-    def tearDown(self):
-        self.teardown_settings()
+def test_archive_get_years_tag_render(djangosettingsfixture):
 
-    def test_archive_get_years_tag_render(self):
+    test_data = [
+        {'year' : 2012, 'month': 1, 'day' : 1},
+        {'year' : 1990, 'month': 1, 'day' : 20},
+        {'year' : 2010, 'month': 2, 'day' : 15},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        ]
+    expected_value = [2012, 2010, 1990]
 
-        test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            ]
-        expected_value = [2012, 2010, 1990]
+    context_var = 'archive_data'
 
-        context_var = 'archive_data'
+    for kwargs in test_data:
+        TempModel(date=datetime(**kwargs)).save()
 
-        for kwargs in test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
+    context = Context({})
+    template = Template("{% load archive_menu %}{% archive_get_years as archive_data %}")
+    rendered_string = template.render(context)
 
-        context = Context({})
-        template = Template("{% load archive_menu %}{% archive_get_years as archive_data %}")
-        rendered_string = template.render(context)
+    assert context[context_var] == expected_value
 
-        self.assertEqual(context[context_var], expected_value)
 
-class ArchiveGetMonthsTagRenderTest(ConfigureSettingsTestCase):
-    def setUp(self):
-        self.setup_settings()
+def test_archive_get_months_tag_render(djangosettingsfixture):
 
-    def tearDown(self):
-        self.teardown_settings()
+    test_data = [
+        {'year' : 2012, 'month': 1, 'day' : 1},
+        {'year' : 1990, 'month': 1, 'day' : 20},
+        {'year' : 2010, 'month': 2, 'day' : 15},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        ]
+    expected_value = [6, 2]
 
-    def test_archive_get_months_tag_render(self):
+    context_var = 'archive_data'
 
-        test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            ]
-        expected_value = [6, 2]
+    for kwargs in test_data:
+        TempModel(date=datetime(**kwargs), is_draft=True).save()
 
-        context_var = 'archive_data'
+    context = Context({})
+    template = Template("{% load archive_menu %}{% archive_get_months 2010 as archive_data %}")
+    rendered_string = template.render(context)
 
-        for kwargs in test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
+    assert context[context_var] == expected_value
 
-        context = Context({})
-        template = Template("{% load archive_menu %}{% archive_get_months 2010 as archive_data %}")
-        rendered_string = template.render(context)
 
-        self.assertEqual(context[context_var], expected_value)
+def test_archive_get_month2_tag_render(djangosettingsfixture):
 
-class ArchiveGetMonthsTagRenderTestUsingContextVariable(ConfigureSettingsTestCase):
-    def setUp(self):
-        self.setup_settings()
+    test_data = [
+        {'year' : 2012, 'month': 1, 'day' : 1},
+        {'year' : 1990, 'month': 1, 'day' : 20},
+        {'year' : 2010, 'month': 2, 'day' : 15},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        ]
+    expected_value = [6, 2]
 
-    def tearDown(self):
-        self.teardown_settings()
+    context_var = 'archive_data'
 
-    def test_archive_get_months_tag_render(self):
+    for kwargs in test_data:
+        TempModel(date=datetime(**kwargs)).save()
 
-        test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            ]
-        expected_value = [6, 2]
+    context = Context({})
+    context['year'] = 2010
+    template = Template("{% load archive_menu %}{% archive_get_months year as archive_data %}")
+    rendered_string = template.render(context)
 
-        context_var = 'archive_data'
+    assert context[context_var] == expected_value
 
-        for kwargs in test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
 
-        context = Context({})
-        context['year'] = 2010
-        template = Template("{% load archive_menu %}{% archive_get_months year as archive_data %}")
-        rendered_string = template.render(context)
+def test_archive_count_posts_in_month_tag_render(djangosettingsfixture):
 
-        self.assertEqual(context[context_var], expected_value)
+    test_data = [
+        {'year' : 2012, 'month': 1, 'day' : 1},
+        {'year' : 1990, 'month': 1, 'day' : 20},
+        {'year' : 2010, 'month': 2, 'day' : 15},
+        {'year' : 2010, 'month': 3, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 11},
+        {'year' : 2010, 'month': 6, 'day' : 10},
+        ]
+    expected_value = 4 
 
-class ArchiveCountPostsInMonthRenderTest(ConfigureSettingsTestCase):
-    def setUp(self):
-        self.setup_settings()
+    context_var = 'archive_data'
 
-    def tearDown(self):
-        self.teardown_settings()
+    for kwargs in test_data:
+        TempModel(date=datetime(**kwargs), is_draft=True).save()
 
-    def test_archive_count_posts_in_month_tag_render(self):
+    context = Context({})
+    template = Template("{% load archive_menu %}{% archive_count_posts_in_month 2010 6 as archive_data %}")
+    rendered_string = template.render(context)
 
-        test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 3, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 11},
-            {'year' : 2010, 'month': 6, 'day' : 10},
-            ]
-        expected_value = 4 
+    assert context[context_var] == expected_value
 
-        context_var = 'archive_data'
+def test_archive_count_posts_in_month_tag_render_using_context_variable(djangosettingsfixture):
 
-        for kwargs in test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
+    test_data = [
+        {'year' : 2012, 'month': 1, 'day' : 1},
+        {'year' : 1990, 'month': 1, 'day' : 20},
+        {'year' : 2010, 'month': 2, 'day' : 15},
+        {'year' : 2010, 'month': 3, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 20},
+        {'year' : 2010, 'month': 6, 'day' : 11},
+        {'year' : 2010, 'month': 6, 'day' : 10},
+        ]
+    expected_value = 4 
 
-        context = Context({})
-        template = Template("{% load archive_menu %}{% archive_count_posts_in_month 2010 6 as archive_data %}")
-        rendered_string = template.render(context)
+    context_var = 'archive_data'
 
-        self.assertEqual(context[context_var], expected_value)
+    for kwargs in test_data:
+        TempModel(date=datetime(**kwargs), is_draft=True).save()
 
-class ArchiveCountPostsInMonthRenderTestUsingContextVariable(ConfigureSettingsTestCase):
-    def setUp(self):
-        self.setup_settings()
+    context = Context({})
+    context['year'] = 2010
+    context['month_int'] = 6
+    template = Template("{% load archive_menu %}{% archive_count_posts_in_month year month_int as archive_data %}")
+    rendered_string = template.render(context)
 
-    def tearDown(self):
-        self.teardown_settings()
-
-    def test_archive_count_posts_in_month_tag_render_using_context_variable(self):
-
-        test_data = [
-            {'year' : 2012, 'month': 1, 'day' : 1},
-            {'year' : 1990, 'month': 1, 'day' : 20},
-            {'year' : 2010, 'month': 2, 'day' : 15},
-            {'year' : 2010, 'month': 3, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 20},
-            {'year' : 2010, 'month': 6, 'day' : 11},
-            {'year' : 2010, 'month': 6, 'day' : 10},
-            ]
-        expected_value = 4 
-
-        context_var = 'archive_data'
-
-        for kwargs in test_data:
-            TempModel(date=datetime(**kwargs), is_draft=True).save()
-
-        context = Context({})
-        context['year'] = 2010
-        context['month_int'] = 6
-        template = Template("{% load archive_menu %}{% archive_count_posts_in_month year month_int as archive_data %}")
-        rendered_string = template.render(context)
-
-        self.assertEqual(context[context_var], expected_value)
+    assert context[context_var] == expected_value

@@ -3,7 +3,7 @@
 __author__ = "Steffen Hunt"
 __credits__ = ["Steffen Hunt"]
 __date__ = "July 2011"
-__license__ = "AGPL3"
+__license__ = "GPL3"
 __version__ = "0.0.1"
 __status__ = "Development"
 
@@ -35,12 +35,6 @@ class ArchiveStatistics():
         else:
             self.published_posts = archived_model.objects.all()
 
-    def get_posts_in_month(self, year, month):
-        """
-        """
-        month_filter_kwargs = self.get_month_filter_kargs(year, month)
-        return self.published_posts.filter(**month_filter_kwargs).count()
-
     def get_year_filter_kargs(self, year):
         """
         """
@@ -49,8 +43,16 @@ class ArchiveStatistics():
     def get_month_filter_kargs(self, year, month):
         """
         """
+        month_filter_kargs = ''
         return dict({self.date_field + '__month' : month}.items() + 
                  self.get_year_filter_kargs(year).items())
+
+    def get_posts_in_month(self, year, month):
+        """
+        """
+        month_filter_kwargs = self.get_month_filter_kargs(year, month)
+        return self.published_posts.filter(**month_filter_kwargs).count()
+
 
     def get_year_list(self):
         """
@@ -66,26 +68,6 @@ class ArchiveStatistics():
                     self.published_posts.filter(**year_filter_kargs).dates(
                     self.date_field, 'month', order='DESC')]
 
-    def get_posts_in_month(self, year, month):
-        month_filter_kwargs = self.get_month_filter_kargs(year, month)
-        return self.published_posts.filter(**month_filter_kwargs).count()
-
-    def get_year_filter_kargs(self, year):
-        return {self.date_field + '__year' : year}
-
-    def get_month_filter_kargs(self, year, month):
-        return dict({self.date_field + '__month' : month}.items() + 
-                 self.get_year_filter_kargs(year).items())
-
-    def get_year_list(self):
-        return [datetime.year for datetime 
-                in self.published_posts.dates(self.date_field, 'year', order='DESC')]
-
-    def get_month_list(self, year):
-        year_filter_kargs = self.get_year_filter_kargs(year)
-        return [datetime.month for datetime in 
-                    self.published_posts.filter(**year_filter_kargs).dates(
-                    self.date_field, 'month', order='DESC')]
 
 class GetYearsTemplateNode(Node):
     """
