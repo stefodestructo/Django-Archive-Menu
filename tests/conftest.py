@@ -68,8 +68,9 @@ def teardown_settings_fixture(saved_settings):
     settings.ARCHIVE_MENU_QUERY_FILTER = saved_settings['query_filter']
 
 def pytest_funcarg__djangosettingsfixture(request):
-    return request.cached_setup(
+    request.cached_setup(
             setup=setup_settings_fixture,
             teardown=teardown_settings_fixture,
             scope='function',
             )
+    return settings
